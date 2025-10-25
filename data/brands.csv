@@ -1,0 +1,100 @@
+brand_name,cruelty_free,parent_company,certification,category,price_tier
+e.l.f. Cosmetics,True,Independent,Leaping Bunny,Makeup,Budget
+NYX Professional Makeup,True,L'Oréal,PETA,Makeup,Budget
+Wet n Wild,True,Markwins Beauty,PETA,Makeup,Budget
+ColourPop,True,Seed Beauty,PETA,Makeup,Budget
+Milani,True,Independent,PETA,Makeup,Budget
+Essence,True,Cosnova,PETA,Makeup,Budget
+Catrice,True,Cosnova,PETA,Makeup,Budget
+Makeup Revolution,True,Revolution Beauty,PETA,Makeup,Budget
+Physicians Formula,True,Markwins Beauty,Leaping Bunny,Makeup,Budget
+Pacifica,True,Independent,Leaping Bunny,Makeup,Budget
+Anastasia Beverly Hills,True,Independent,PETA,Makeup,Mid-range
+Too Faced,True,Estée Lauder,PETA,Makeup,Mid-range
+Urban Decay,True,L'Oréal,PETA,Makeup,Mid-range
+Tarte Cosmetics,True,Kose,PETA,Makeup,Mid-range
+Fenty Beauty,True,LVMH,PETA,Makeup,Mid-range
+KVD Beauty,True,Kendo,PETA,Makeup,Mid-range
+Morphe,True,Forma Brands,PETA,Makeup,Mid-range
+BH Cosmetics,True,Independent,PETA,Makeup,Mid-range
+Becca,True,Estée Lauder,PETA,Makeup,Mid-range
+Smashbox,True,Estée Lauder,PETA,Makeup,Mid-range
+Cover FX,True,Independent,PETA,Makeup,Mid-range
+Bare Minerals,True,Shiseido,PETA,Makeup,Mid-range
+Hourglass Cosmetics,True,Unilever,PETA,Makeup,Luxury
+Ilia Beauty,True,Independent,Leaping Bunny,Makeup,Luxury
+RMS Beauty,True,Independent,Leaping Bunny,Makeup,Luxury
+Maybelline,False,L'Oréal,,Makeup,Budget
+Revlon,False,Revlon Inc,,Makeup,Budget
+CoverGirl,False,Coty,,Makeup,Budget
+L'Oréal Paris,False,L'Oréal,,Makeup,Budget
+Rimmel London,False,Coty,,Makeup,Budget
+Almay,False,Revlon Inc,,Makeup,Budget
+MAC Cosmetics,False,Estée Lauder,,Makeup,Mid-range
+Clinique,False,Estée Lauder,,Makeup,Mid-range
+Benefit Cosmetics,False,LVMH,,Makeup,Mid-range
+Bobbi Brown,False,Estée Lauder,,Makeup,Mid-range
+NARS,False,Shiseido,,Makeup,Mid-range
+Estée Lauder,False,Estée Lauder,,Makeup,Luxury
+Lancôme,False,L'Oréal,,Makeup,Luxury
+Chanel,False,Chanel,,Makeup,Luxury
+Dior,False,LVMH,,Makeup,Luxury
+Giorgio Armani Beauty,False,L'Oréal,,Makeup,Luxury
+Yves Saint Laurent,False,L'Oréal,,Makeup,Luxury
+The Ordinary,True,Deciem,PETA,Skincare,Budget
+CeraVe,True,L'Oréal,PETA,Skincare,Budget
+Pacifica,True,Independent,Leaping Bunny,Skincare,Budget
+Derma E,True,Independent,Leaping Bunny,Skincare,Budget
+Acure,True,Independent,Leaping Bunny,Skincare,Budget
+Alba Botanica,True,Hain Celestial,Leaping Bunny,Skincare,Budget
+Bliss,True,Steward Corporation,PETA,Skincare,Budget
+Paula's Choice,True,Unilever,PETA,Skincare,Mid-range
+Youth to the People,True,L'Oréal,PETA,Skincare,Mid-range
+First Aid Beauty,True,Procter & Gamble,PETA,Skincare,Mid-range
+Glow Recipe,True,Independent,PETA,Skincare,Mid-range
+Herbivore Botanicals,True,Independent,Leaping Bunny,Skincare,Mid-range
+Tata Harper,True,Independent,PETA,Skincare,Luxury
+Drunk Elephant,True,Shiseido,PETA,Skincare,Luxury
+Sunday Riley,True,Independent,PETA,Skincare,Luxury
+Neutrogena,False,Johnson & Johnson,,Skincare,Budget
+Olay,False,Procter & Gamble,,Skincare,Budget
+Aveeno,False,Johnson & Johnson,,Skincare,Budget
+Clean & Clear,False,Johnson & Johnson,,Skincare,Budget
+Pond's,False,Unilever,,Skincare,Budget
+La Roche-Posay,False,L'Oréal,,Skincare,Mid-range
+Vichy,False,L'Oréal,,Skincare,Mid-range
+Kiehl's,False,L'Oréal,,Skincare,Mid-range
+Clinique,False,Estée Lauder,,Skincare,Mid-range
+Origins,False,Estée Lauder,,Skincare,Mid-range
+La Mer,False,Estée Lauder,,Skincare,Luxury
+SK-II,False,Procter & Gamble,,Skincare,Luxury
+Not Your Mother's,True,Revlon,PETA,Haircare,Budget
+OGX,True,Johnson & Johnson,PETA,Haircare,Budget
+Giovanni,True,Independent,Leaping Bunny,Haircare,Budget
+Kristen Ess,True,Independent,PETA,Haircare,Budget
+Shea Moisture,True,Unilever,PETA,Haircare,Budget
+Love Beauty and Planet,True,Unilever,PETA,Haircare,Budget
+Briogeo,True,Independent,PETA,Haircare,Mid-range
+Amika,True,Independent,PETA,Haircare,Mid-range
+Ouai,True,Procter & Gamble,PETA,Haircare,Mid-range
+Function of Beauty,True,Independent,PETA,Haircare,Mid-range
+Olaplex,True,Independent,Leaping Bunny,Haircare,Luxury
+Pantene,False,Procter & Gamble,,Haircare,Budget
+Head & Shoulders,False,Procter & Gamble,,Haircare,Budget
+Herbal Essences,False,Procter & Gamble,,Haircare,Budget
+TRESemmé,False,Unilever,,Haircare,Budget
+Garnier,False,L'Oréal,,Haircare,Budget
+Aussie,False,Procter & Gamble,,Haircare,Budget
+Dove,False,Unilever,,Haircare,Budget
+Redken,False,L'Oréal,,Haircare,Mid-range
+Matrix,False,L'Oréal,,Haircare,Mid-range
+Bed Head,False,Unilever,,Haircare,Mid-range
+Kérastase,False,L'Oréal,,Haircare,Luxury
+Pacifica,True,Independent,Leaping Bunny,Fragrance,Budget
+Lush,True,Independent,PETA,Fragrance,Mid-range
+Skylar,True,Independent,PETA,Fragrance,Mid-range
+Phlur,True,Independent,PETA,Fragrance,Mid-range
+Calvin Klein,False,Coty,,Fragrance,Mid-range
+Marc Jacobs Fragrances,False,Coty,,Fragrance,Luxury
+Versace,False,Euroitalia,,Fragrance,Luxury
+Dolce & Gabbana,False,Shiseido,,Fragrance,Luxury

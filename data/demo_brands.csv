@@ -1,0 +1,9 @@
+brand_name,cruelty_free,parent_company,certification,category,price_tier
+e.l.f. Cosmetics,True,Independent,Leaping Bunny,Makeup,Budget
+Urban Decay,True,L'Oréal,PETA,Makeup,Mid-range
+Fenty Beauty,True,LVMH,PETA,Makeup,Mid-range
+Maybelline,False,L'Oréal,,Makeup,Budget
+MAC Cosmetics,False,Estée Lauder,,Makeup,Mid-range
+The Ordinary,True,Deciem,PETA,Skincare,Budget
+Neutrogena,False,Johnson & Johnson,,Skincare,Budget
+OGX,True,Johnson & Johnson,PETA,Haircare,Budget
