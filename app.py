@@ -1,12 +1,11 @@
 """
-ConsciousCart - Personalized Agentic UI
-Shows user profile and learning in real-time
+ConsciousCart - Enhanced UI with Confidence Scoring & Analytics
+Shows verification confidence and agent decision-making stats
 """
 import streamlit as st
 import sys
 from pathlib import Path
 
-# Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent))
 
 from agent import ConsciousCartAgent
@@ -19,7 +18,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS - Clean and minimal
+# Custom CSS
 st.markdown("""
 <style>
     /* Kraft paper background */
@@ -27,12 +26,10 @@ st.markdown("""
         background: linear-gradient(135deg, #e8dcc8 0%, #f5ede1 50%, #e8dcc8 100%);
     }
     
-    /* Main content area */
     .main {
         background: none;
     }
     
-    /* Reduce padding */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
@@ -40,7 +37,7 @@ st.markdown("""
         margin: 0 auto !important;
     }
     
-    /* Chat messages - clean white cards */
+    /* Chat messages */
     .stChatMessage {
         background-color: rgba(255, 255, 255, 0.95) !important;
         border-radius: 12px !important;
@@ -50,36 +47,38 @@ st.markdown("""
         margin: 8px 0 !important;
     }
     
-    /* Headers - darker brown */
+    /* Headers */
+    h1, h2, h3 {
+        color: #4a3f35 !important;
+        font-weight: 600 !important;
+    }
+    
     h1 {
-        color: #4a3f35 !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.5px !important;
+        text-align: center !important;
         margin-bottom: 5px !important;
-        text-align: center !important;
     }
     
-    h2 {
-        color: #5a4d42 !important;
-        font-weight: 600 !important;
-        margin-top: 10px !important;
-        margin-bottom: 10px !important;
-        text-align: center !important;
-    }
-    
-    h3 {
-        color: #6b5d52 !important;
-        font-weight: 500 !important;
-        margin-top: 8px !important;
-        margin-bottom: 8px !important;
-    }
-    
-    /* Regular text - darker */
-    p, li, span {
+    /* FORCE ALL TEXT TO BE DARK - FIX WHITE TEXT */
+    * {
         color: #4a3f35 !important;
     }
     
-    /* Tool call boxes - subtle with green accent */
+    /* Sidebar - force dark text */
+    section[data-testid="stSidebar"] * {
+        color: #4a3f35 !important;
+    }
+    
+    /* All paragraph and list text */
+    p, li, span, div, label {
+        color: #4a3f35 !important;
+    }
+    
+    /* Markdown content */
+    .stMarkdown, .stMarkdown * {
+        color: #4a3f35 !important;
+    }
+    
+    /* Tool call boxes */
     .tool-call {
         background: linear-gradient(135deg, #f9f5f0 0%, #fefcf9 100%);
         padding: 12px;
@@ -93,7 +92,6 @@ st.markdown("""
         font-weight: 600;
         color: #4a3f35;
         font-size: 0.9em;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     
     .tool-input {
@@ -106,13 +104,13 @@ st.markdown("""
         border-radius: 6px;
     }
     
-    /* Sidebar - natural kraft */
+    /* Sidebar */
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #f5ede1 0%, #e8dcc8 100%) !important;
         border-right: 1px solid #c4b5a0 !important;
     }
     
-    /* Buttons - sage green */
+    /* Buttons */
     .stButton button {
         background: linear-gradient(135deg, #7a9b76 0%, #8fae8b 100%) !important;
         color: white !important;
@@ -121,50 +119,33 @@ st.markdown("""
         padding: 10px 20px !important;
         font-weight: 600 !important;
         box-shadow: 0 2px 6px rgba(122, 155, 118, 0.3) !important;
-        transition: all 0.3s ease !important;
-        letter-spacing: 0.5px !important;
     }
     
     .stButton button:hover {
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 8px rgba(122, 155, 118, 0.4) !important;
-        background: linear-gradient(135deg, #8fae8b 0%, #7a9b76 100%) !important;
     }
     
-    /* Input box - clean natural */
-    .stChatInputContainer {
-        border: 2px solid #c4b5a0 !important;
-        border-radius: 12px !important;
-        background: white !important;
-    }
-    
-    /* Expander - minimal with green accent */
-    .streamlit-expanderHeader {
-        background: linear-gradient(135deg, #f9f5f0 0%, #fefcf9 100%) !important;
-        border-radius: 10px !important;
-        border: 1px solid #7a9b76 !important;
-        font-weight: 600 !important;
-        color: #4a3f35 !important;
-    }
-    
-    /* Metrics - darker text */
+    /* Metrics */
     [data-testid="stMetricValue"] {
         color: #4a3f35 !important;
         font-weight: 600 !important;
     }
     
-    [data-testid="stMetricLabel"] {
-        color: #5a4d42 !important;
+    /* Progress bar text - make it visible */
+    .stProgress > div > div > div {
+        color: #4a3f35 !important;
+        font-weight: 600 !important;
     }
     
-    /* Divider - green accent */
+    /* Divider */
     hr {
         border-color: #7a9b76 !important;
         opacity: 0.3 !important;
         margin: 15px 0 !important;
     }
     
-    /* Subtitle style - green */
+    /* Subtitle */
     .subtitle {
         color: #6b8167;
         font-size: 0.95em;
@@ -184,19 +165,37 @@ st.markdown("""
         margin: 10px 0;
     }
     
-    /* Center everything in header */
-    .header-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        margin-bottom: 15px;
+    /* Confidence badge */
+    .confidence-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85em;
+        margin: 4px 0;
+    }
+    
+    .confidence-high {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .confidence-medium {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .confidence-low {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize agent (with session state to persist)
+# Initialize agent
 if "agent" not in st.session_state:
     st.session_state.agent = ConsciousCartAgent()
 
@@ -208,16 +207,17 @@ if "messages" not in st.session_state:
     st.session_state.messages.append({
         "role": "assistant",
         "content": "Hello! I'm here to help you discover cruelty-free beauty products. As we talk, I'll learn your preferences to give you personalized recommendations. What product would you like to check?",
-        "tools": []
+        "tools": [],
+        "confidence": None
     })
 
-# Main layout - equal columns
+# Main layout
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    # Clean centered header
+    # Header
     st.markdown("""
-    <div class="header-container">
+    <div style="text-align: center;">
         <h1>🐰 ConsciousCart</h1>
         <p class="subtitle">Every purchase is a choice — Choose compassion</p>
     </div>
@@ -228,7 +228,19 @@ with col1:
     # Display chat messages
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
-            # Show tool calls if any
+            # Show confidence score if available
+            if message.get("confidence"):
+                conf = message["confidence"]
+                conf_class = "confidence-high" if conf >= 0.75 else "confidence-medium" if conf >= 0.5 else "confidence-low"
+                conf_label = "Very High" if conf >= 0.9 else "High" if conf >= 0.75 else "Medium" if conf >= 0.5 else "Low"
+                
+                st.markdown(f"""
+                <div class="confidence-badge {conf_class}">
+                    🎯 Confidence: {conf_label} ({conf:.0%})
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Show tool calls
             if message.get("tools"):
                 with st.expander("🔍 Research Process", expanded=False):
                     for i, tool_call in enumerate(message["tools"], 1):
@@ -248,7 +260,8 @@ with col1:
         st.session_state.messages.append({
             "role": "user",
             "content": prompt,
-            "tools": []
+            "tools": [],
+            "confidence": None
         })
         
         # Display user message
@@ -260,6 +273,22 @@ with col1:
             with st.spinner("Researching..."):
                 try:
                     response, tools_used = agent.process_query(prompt)
+                    
+                    # Get confidence if available
+                    confidence_score = None
+                    if agent.last_verification_result:
+                        vr = agent.last_verification_result
+                        confidence_score = vr.confidence
+                        
+                        # Display confidence badge
+                        conf_class = "confidence-high" if confidence_score >= 0.75 else "confidence-medium" if confidence_score >= 0.5 else "confidence-low"
+                        conf_label = vr.get_confidence_label()
+                        
+                        st.markdown(f"""
+                        <div class="confidence-badge {conf_class}">
+                            🎯 Confidence: {conf_label} ({confidence_score:.0%})
+                        </div>
+                        """, unsafe_allow_html=True)
                     
                     # Show tools used
                     if tools_used:
@@ -279,7 +308,8 @@ with col1:
                     st.session_state.messages.append({
                         "role": "assistant",
                         "content": response,
-                        "tools": tools_used
+                        "tools": tools_used,
+                        "confidence": confidence_score
                     })
                     
                 except Exception as e:
@@ -288,18 +318,19 @@ with col1:
                     st.session_state.messages.append({
                         "role": "assistant",
                         "content": error_msg,
-                        "tools": []
+                        "tools": [],
+                        "confidence": None
                     })
 
 with col2:
-    # Simple bunny icon
+    # Bunny icon
     st.markdown("""
     <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
         <div style="font-size: 80px;">🐰</div>
     </div>
     """, unsafe_allow_html=True)
     
-    # USER PROFILE SECTION (NEW!)
+    # USER PROFILE SECTION
     st.markdown("## 👤 Your Profile")
     
     profile = agent.user_profile
@@ -328,66 +359,127 @@ with col2:
     
     # Show product history
     if profile.product_history:
-        st.markdown("### Recently Checked")
+        st.markdown("### 📜 Recently Checked")
         for item in profile.product_history[-5:]:
             status = "✓" if item["is_cruelty_free"] else "✗"
             st.text(f"{status} {item['brand']}")
     
     st.markdown("---")
     
-    st.markdown("## How It Works")
+    # ANALYTICS DASHBOARD (NEW!)
+    st.markdown("## 📊 Agent Analytics")
+    
+    # Calculate stats
+    total_messages = len([m for m in st.session_state.messages if m["role"] == "user"]) - 1
+    total_tools = sum(len(m.get("tools", [])) for m in st.session_state.messages)
+    avg_tools = total_tools / max(total_messages, 1) if total_messages > 0 else 0
+    
+    # Show confidence distribution
+    confidences = [m.get("confidence") for m in st.session_state.messages if m.get("confidence")]
+    avg_confidence = sum(confidences) / len(confidences) if confidences else 0
+    
+    # Metrics with emojis
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        st.metric("🔍 Queries", total_messages)
+    with col_b:
+        st.metric("⚡ Tool Calls", total_tools)
+    with col_c:
+        st.metric("📈 Avg Tools", f"{avg_tools:.1f}")
+    
+    # Confidence meter
+    if avg_confidence > 0:
+        st.markdown("### 🎯 Verification Confidence")
+        st.progress(avg_confidence, text=f"**{avg_confidence:.0%}** Average Confidence")
+    
+    # Tool usage breakdown
+    if total_tools > 0:
+        st.markdown("### 🔧 Tool Usage")
+        all_tools = []
+        for msg in st.session_state.messages:
+            for tool in msg.get("tools", []):
+                all_tools.append(tool["tool"])
+        
+        if all_tools:
+            tool_counts = {}
+            for tool in all_tools:
+                tool_counts[tool] = tool_counts.get(tool, 0) + 1
+            
+            # Add emojis to tool names
+            tool_emojis = {
+                "check_database": "💾",
+                "web_search": "🌐",
+                "save_to_database": "💿"
+            }
+            
+            for tool, count in tool_counts.items():
+                pct = count / len(all_tools)
+                emoji = tool_emojis.get(tool, "🔹")
+                tool_display = tool.replace("_", " ").title()
+                st.progress(pct, text=f"**{emoji} {tool_display}:** {count}x ({pct:.0%})")
+    
+    st.markdown("---")
+    
+    # HOW IT WORKS
+    st.markdown("## 🔬 How It Works")
     st.markdown("---")
     
     st.markdown("""
-    ### Intelligent Agent System
+    ### 🤖 Intelligent Agent System
     
-    **Decision Making**
+    **🧠 Decision Making**
     - Checks database first
     - Searches when needed
     - Evaluates source credibility
     
-    **Personalization** 🌟
+    **✨ Personalization**
     - Learns your budget
     - Remembers your values
     - Adapts recommendations
     
-    **Multi-Source Verification**
-    - Leaping Bunny certification
-    - PETA's cruelty-free list
-    - Parent company policies
+    **🎯 Confidence Scoring**
+    - Multi-source verification
+    - Conflict detection
+    - Transparency in certainty
     """)
     
     st.markdown("---")
     
     st.markdown("""
-    ### Try Saying
+    ### 💬 Try Saying
     
-    - "Is Maybelline cruelty-free?"
-    - "Too expensive" (I'll learn!)
-    - "Is it vegan?" (I'll remember!)
-    - "What about foundation?"
+    - 🔍 "Is Maybelline cruelty-free?"
+    - 💰 "Too expensive" (I'll learn!)
+    - 🌱 "Is it vegan?" (I'll remember!)
+    - 💄 "What about foundation?"
     """)
     
     st.markdown("---")
     
-    # Stats
-    st.markdown("### Impact")
+    # Impact stats
+    st.markdown("### 🌍 Impact")
     col_a, col_b = st.columns(2)
     with col_a:
-        st.metric("Brands", f"{len(profile.product_history)}")
+        st.metric("🔎 Brands Checked", f"{len(profile.product_history)}")
     with col_b:
-        st.metric("Learned", f"{1 if profile.budget_max else 0}")
+        learned = sum([
+            1 if profile.budget_max else 0,
+            1 if profile.values["vegan"] else 0,
+            1 if profile.values["fragrance_free"] else 0
+        ])
+        st.metric("💡 Learned", learned)
     
     st.markdown("---")
     
-    # Clear chat button
-    if st.button("Clear Chat & Profile", use_container_width=True):
+    # Clear button
+    if st.button("🔄 Clear Chat & Profile", use_container_width=True):
         st.session_state.messages = []
-        st.session_state.agent = ConsciousCartAgent()  # Reset agent
+        st.session_state.agent = ConsciousCartAgent()
         st.session_state.messages.append({
             "role": "assistant",
             "content": "Hello! I'm here to help you discover cruelty-free beauty products. As we talk, I'll learn your preferences to give you personalized recommendations. What product would you like to check?",
-            "tools": []
+            "tools": [],
+            "confidence": None
         })
         st.rerun()
     
@@ -396,7 +488,7 @@ with col2:
     # Footer
     st.markdown("""
     <div style='text-align: center; padding: 15px; color: #5a4d42;'>
-        <p style='font-size: 0.9em; margin: 5px 0; font-weight: 600;'>DS+X Hackathon 2024</p>
+        <p style='font-size: 0.9em; margin: 5px 0; font-weight: 600;'>DS+X Hackathon 2025</p>
         <p style='font-size: 0.85em; margin: 5px 0;'>Boston University</p>
     </div>
     """, unsafe_allow_html=True)

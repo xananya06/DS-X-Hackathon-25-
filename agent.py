@@ -1,6 +1,6 @@
 """
-ConsciousCart - Personalized Agentic System with REAL WEB SEARCH
-With user profiling, preference learning, and actual web data fetching
+ConsciousCart - Enhanced Agentic System
+With confidence scoring, analytics, and real web search
 """
 import os
 import json
@@ -8,6 +8,7 @@ import sqlite3
 from datetime import datetime, timedelta
 from anthropic import Anthropic
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -22,7 +23,7 @@ class UserProfile:
             "vegan": False,
             "fragrance_free": False,
             "paraben_free": False,
-            "cruelty_free": True  # Always true for this app
+            "cruelty_free": True
         }
         self.product_history = []
         self.preferred_brands = set()
@@ -33,16 +34,14 @@ class UserProfile:
         """Learn from user's implicit and explicit feedback"""
         feedback_lower = feedback.lower()
         
-        # Budget learning from "too expensive" or "cheap"
+        # Budget learning
         if "expensive" in feedback_lower or "too much" in feedback_lower or "pricey" in feedback_lower:
             if context.get("last_price"):
-                # User thinks this price is too high, set max 30% lower
                 self.budget_max = int(context["last_price"] * 0.7)
                 print(f"[Profile] Learned budget_max: ${self.budget_max}")
         
         elif "cheap" in feedback_lower or "affordable" in feedback_lower or "budget" in feedback_lower:
             if context.get("last_price"):
-                # User wants cheap, set max at this price
                 self.budget_max = int(context["last_price"])
                 print(f"[Profile] Learned budget_max: ${self.budget_max}")
         
@@ -109,30 +108,57 @@ class UserProfile:
 
 
 class VerificationResult:
-    """Result from cruelty-free verification with confidence"""
+    """Result with confidence scoring"""
     
-    def __init__(self, brand: str, is_cruelty_free: bool, confidence: float,
-                 explanation: str, sources: list, conflicts: list = None):
+    def __init__(self, brand: str, is_cruelty_free: bool, sources_count: int, 
+                 has_conflicts: bool = False):
         self.brand = brand
         self.is_cruelty_free = is_cruelty_free
-        self.confidence = confidence
-        self.explanation = explanation
-        self.sources = sources
-        self.conflicts = conflicts or []
+        self.sources_count = sources_count
+        self.has_conflicts = has_conflicts
+        self.confidence = self.calculate_confidence()
     
-    def to_dict(self) -> dict:
-        return {
-            "brand": self.brand,
-            "is_cruelty_free": self.is_cruelty_free,
-            "confidence": self.confidence,
-            "explanation": self.explanation,
-            "sources": self.sources,
-            "conflicts": self.conflicts
-        }
+    def calculate_confidence(self) -> float:
+        """Calculate confidence score 0.0-1.0"""
+        base = 0.5
+        
+        # More sources = higher confidence
+        if self.sources_count >= 4:
+            base = 0.95
+        elif self.sources_count >= 3:
+            base = 0.85
+        elif self.sources_count >= 2:
+            base = 0.75
+        
+        # Conflicts reduce confidence
+        if self.has_conflicts:
+            base -= 0.25
+        
+        return min(max(base, 0.1), 1.0)
+    
+    def get_confidence_label(self) -> str:
+        """Get human-readable confidence label"""
+        if self.confidence >= 0.9:
+            return "Very High"
+        elif self.confidence >= 0.75:
+            return "High"
+        elif self.confidence >= 0.5:
+            return "Medium"
+        else:
+            return "Low"
+    
+    def get_confidence_color(self) -> str:
+        """Get color for UI"""
+        if self.confidence >= 0.75:
+            return "success"  # Green
+        elif self.confidence >= 0.5:
+            return "warning"  # Yellow
+        else:
+            return "error"  # Red
 
 
 class ConsciousCartAgent:
-    """Personalized agentic system for cruelty-free verification with REAL web search"""
+    """Enhanced agentic system with confidence scoring"""
     
     def __init__(self):
         self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -141,14 +167,19 @@ class ConsciousCartAgent:
         self.conversation_history = []
         self.tool_calls = []
         
-        # NEW: User profile for personalization
+        # User profile
         self.user_profile = UserProfile()
         self.last_recommendation = None
+        
+        # Context tracking
+        self.last_brand_discussed = None
+        self.last_product_type = None
+        self.last_verification_result = None  # NEW: Store verification with confidence
         
         # Initialize database
         self._init_database()
         
-        # Define available tools
+        # Define tools
         self.tools = [
             {
                 "name": "check_database",
@@ -166,7 +197,7 @@ class ConsciousCartAgent:
             },
             {
                 "name": "web_search",
-                "description": "Search the web for information about cruelty-free status, certifications, or alternatives.",
+                "description": "Search for information about cruelty-free status, certifications, or alternatives.",
                 "input_schema": {
                     "type": "object",
                     "properties": {
@@ -219,7 +250,6 @@ class ConsciousCartAgent:
         conn.commit()
         conn.close()
         
-        # Seed with known brands
         self._seed_database()
     
     def _seed_database(self):
@@ -287,18 +317,33 @@ class ConsciousCartAgent:
         
         return {"found": False}
     
+    def _extract_sources_count(self, search_result: str) -> int:
+        """Extract number of sources from search result"""
+        match = re.search(r'SOURCES CHECKED:\s*(\d+)', search_result)
+        if match:
+            return int(match.group(1))
+        # Fallback: count mentions of known sources
+        sources = ['PETA', 'Leaping Bunny', 'Cruelty-Free', 'Logical Harmony']
+        return sum(1 for source in sources if source in search_result)
+    
+    def _detect_conflicts(self, search_result: str) -> bool:
+        """Detect if sources conflict"""
+        # Simple heuristic
+        has_positive = any(word in search_result.lower() for word in ['cruelty-free', 'certified', 'approved'])
+        has_negative = any(word in search_result.lower() for word in ['not cruelty-free', 'tests on animals', 'not certified'])
+        return has_positive and has_negative
+    
     def _web_search(self, query: str) -> str:
-        """Tool: REAL web search using Claude's web_search capability"""
+        """Tool: REAL web search with fallback"""
         try:
             print(f"[Web Search] Searching for: {query}")
             
-            # Create a new Claude instance with web search tool
             search_response = self.client.messages.create(
                 model=self.model,
                 max_tokens=2000,
                 temperature=0.3,
                 system="""You are a research assistant specializing in cruelty-free beauty products. 
-                
+
 When searching, look for:
 1. Brand's cruelty-free status (PETA, Leaping Bunny certification)
 2. Parent company information
@@ -334,7 +379,6 @@ CONFIDENCE: [High/Medium/Low based on source agreement]""",
                 }]
             )
             
-            # Extract text from response
             result_text = ""
             for block in search_response.content:
                 if hasattr(block, 'text'):
@@ -345,7 +389,6 @@ CONFIDENCE: [High/Medium/Low based on source agreement]""",
             
         except Exception as e:
             print(f"[Web Search Error] {str(e)}")
-            # Fallback to enhanced mock if web search fails
             return self._mock_search_fallback(query)
     
     def _mock_search_fallback(self, query: str) -> str:
@@ -354,7 +397,6 @@ CONFIDENCE: [High/Medium/Low based on source agreement]""",
         
         print(f"[Fallback] Using mock data for: {query}")
         
-        # Multi-source responses for common queries
         if "l'oreal" in query_lower or "loreal" in query_lower:
             return """SOURCES CHECKED: 3
 
@@ -399,31 +441,7 @@ Leaping Bunny:
 Sources: PETA, Leaping Bunny, brand websites (2024)
 
 CONFIDENCE: High"""
-            
-            elif "lipstick" in query_lower:
-                return """SOURCES CHECKED: 3
-
-Cruelty-Free Options:
-- e.l.f. Satin Lipstick ($3) - PETA approved, vegan
-- Pacifica Color Quench Lip Tint ($9) - Leaping Bunny certified
-- Bite Beauty Amuse Bouche ($18) - CF certified, natural ingredients
-
-Sources: PETA, Leaping Bunny, Ethical Elephant (2024)
-
-CONFIDENCE: High"""
         
-        elif "maybelline" in query_lower:
-            return """SOURCES CHECKED: 3
-
-PETA: Maybelline (owned by L'Oréal) is NOT cruelty-free. Parent company tests on animals.
-
-Leaping Bunny: Not certified. L'Oréal sells in mainland China where animal testing is required.
-
-Logical Harmony: Maybelline fails cruelty-free criteria due to parent company policies.
-
-CONFIDENCE: Very High (3/3 sources agree)"""
-        
-        # Generic response for unknown queries
         return f"""SOURCES CHECKED: 2
 
 Searching for information about: {query}
@@ -467,7 +485,22 @@ CONFIDENCE: Medium (using cached knowledge)"""
         if tool_name == "check_database":
             return self._check_database(tool_input["brand_name"])
         elif tool_name == "web_search":
-            return self._web_search(tool_input["query"])
+            result = self._web_search(tool_input["query"])
+            
+            # Extract confidence metrics from search result
+            sources_count = self._extract_sources_count(result)
+            has_conflicts = self._detect_conflicts(result)
+            
+            # Store for later use
+            if self.last_brand_discussed:
+                self.last_verification_result = VerificationResult(
+                    brand=self.last_brand_discussed,
+                    is_cruelty_free=True,  # Will be updated by agent's final answer
+                    sources_count=sources_count,
+                    has_conflicts=has_conflicts
+                )
+            
+            return result
         elif tool_name == "save_to_database":
             return self._save_to_database(
                 tool_input["brand_name"],
@@ -480,31 +513,40 @@ CONFIDENCE: Medium (using cached knowledge)"""
         return {"error": f"Unknown tool: {tool_name}"}
     
     def _detect_feedback(self, user_query: str) -> bool:
-        """Detect if user is giving feedback on previous recommendation"""
+        """Detect if user is giving feedback or expressing preferences"""
         feedback_words = ["expensive", "cheap", "too much", "perfect", "good", "bad", 
-                         "affordable", "pricey", "budget", "love", "hate"]
+                         "affordable", "pricey", "budget", "love", "hate",
+                         "vegan", "fragrance", "paraben", "scent"]
         return any(word in user_query.lower() for word in feedback_words)
     
     def process_query(self, user_query: str) -> tuple:
-        """Main agentic loop with personalization"""
+        """Main agentic loop with confidence scoring"""
         self.tool_calls = []
         
-        # Check if this is feedback on previous recommendation
-        if self._detect_feedback(user_query) and self.last_recommendation:
-            self.user_profile.learn_from_feedback(
-                user_query,
-                {"last_price": self.last_recommendation.get("price")}
-            )
+        # Check for feedback
+        if self._detect_feedback(user_query):
+            if self.last_recommendation:
+                self.user_profile.learn_from_feedback(
+                    user_query,
+                    {"last_price": self.last_recommendation.get("price")}
+                )
+            else:
+                self.user_profile.learn_from_feedback(user_query, {})
         
-        # Get user profile context
+        # Get context
         profile_summary = self.user_profile.get_profile_summary()
         constraints = self.user_profile.get_constraints_for_agent()
         
-        # System prompt with personalization
+        context_info = ""
+        if self.last_brand_discussed:
+            context_info = f"\n\nCONVERSATION CONTEXT:\n- Last brand discussed: {self.last_brand_discussed}"
+            if self.last_product_type:
+                context_info += f"\n- Product type: {self.last_product_type}"
+        
         system_prompt = f"""You are an intelligent agent helping users find cruelty-free beauty products.
 
 USER PROFILE: {profile_summary}
-USER CONSTRAINTS: {constraints}
+USER CONSTRAINTS: {constraints}{context_info}
 
 YOUR PROCESS:
 1. ALWAYS check database first using check_database tool
@@ -518,6 +560,7 @@ IMPORTANT:
 - Prioritize options that match ALL user values (vegan, fragrance-free, etc.)
 - Mention when products match user preferences
 - Be friendly and personal
+- If user asks a follow-up question like "is it vegan?", refer to the last brand discussed: {self.last_brand_discussed or 'unknown'}
 
 RESPONSE STYLE:
 - Conversational and warm
@@ -546,6 +589,10 @@ RESPONSE STYLE:
                 tool_name = tool_use_block.name
                 tool_input = tool_use_block.input
                 
+                # Track brand
+                if tool_name == "check_database":
+                    self.last_brand_discussed = tool_input.get("brand_name")
+                
                 tool_result = self._execute_tool(tool_name, tool_input)
                 
                 messages.append({
@@ -572,9 +619,7 @@ RESPONSE STYLE:
                     ""
                 )
                 
-                # Store last recommendation context
-                # (simplified - in production, parse the response better)
-                self.last_recommendation = {"price": 10}  # Default
+                self.last_recommendation = {"price": 10}
                 
                 return final_text, self.tool_calls
             
@@ -586,13 +631,16 @@ RESPONSE STYLE:
 if __name__ == "__main__":
     agent = ConsciousCartAgent()
     
-    # Test with real web search
     print("\n" + "="*60)
-    print("Testing Real Web Search")
+    print("Testing Enhanced Agent with Confidence Scoring")
     print("="*60)
     
     response, tools = agent.process_query("Is Rare Beauty cruelty-free?")
     print(f"\nResponse: {response}")
     print(f"\nTools used: {len(tools)}")
-    for i, tool in enumerate(tools, 1):
-        print(f"{i}. {tool['tool']}: {tool['input']}")
+    
+    if agent.last_verification_result:
+        vr = agent.last_verification_result
+        print(f"\nConfidence Score: {vr.confidence:.2f} ({vr.get_confidence_label()})")
+        print(f"Sources Checked: {vr.sources_count}")
+        print(f"Conflicts Detected: {vr.has_conflicts}")
