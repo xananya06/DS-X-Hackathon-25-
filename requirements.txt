@@ -1,0 +1,10 @@
+fuzzywuzzy==0.18.0
+Levenshtein==0.25.1
+numpy==1.24.4
+pandas==2.0.3
+python-dateutil==2.9.0.post0
+python-Levenshtein==0.25.1
+pytz==2025.2
+rapidfuzz==3.9.7
+six==1.17.0
+tzdata==2025.2
