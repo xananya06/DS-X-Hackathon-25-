@@ -16,6 +16,7 @@ load_dotenv()
 class UserProfile:
     """Tracks user preferences and learns from feedback"""
     
+    
     def __init__(self):
         self.budget_max = None
         self.budget_min = None
