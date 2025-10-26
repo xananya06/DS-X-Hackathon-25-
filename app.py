@@ -255,7 +255,10 @@ with col1:
             st.markdown(message["content"])
     
     # Chat input
-    if prompt := st.chat_input("Enter product or brand name..."):
+    prompt = st.chat_input("Enter product or brand name...")
+
+    if prompt:
+    # if prompt == st.chat_input("Enter product or brand name..."):
         # Add user message
         st.session_state.messages.append({
             "role": "user",
